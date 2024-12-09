@@ -117,6 +117,7 @@ if __name__ == "__main__":
     args = parse_command_args()
     if not args.program:
         # Show total system memory if program not specified
+        total_mem = get_sys_mem()
         avail_mem = get_avail_mem()
         used_mem = total_mem - avail_mem
         percent = used_mem / total_mem
@@ -128,6 +129,7 @@ if __name__ == "__main__":
             print('Memory' + ' ' * 9 + '[' + graph + ' | ' + str(int(percent*100)) + '%] ' + str(used_mem) + '/' + str(total_mem))
     else:
         # Gets and displays the memory usage for the process specified
+        total_mem = get_sys_mem()
         pids = pids_of_prog(args.program)
         if len(pids) > 0:
             for pid in pids:

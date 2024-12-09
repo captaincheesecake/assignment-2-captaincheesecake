@@ -14,8 +14,8 @@ with anyone or anything except for submission for grading.
 I understand that the Academic Honesty Policy will be enforced and 
 violators will be reported and appropriate action will be taken.
 
-Description: <Enter your documentation here>
-
+Description: The script will display memory usage information using graphs. It will show the system memory usage
+if no program is specified. If a program is specified it will show the memory usage of that program.
 '''
 
 import argparse
@@ -37,8 +37,10 @@ def parse_command_args() -> object:
 
 def percent_to_graph(percent: float, length: int=20) -> str:
     "turns a percent 0.0 - 1.0 into a bar graph"
+    # Convert percentage to determine the number of # for the graph
     fill = int(percent * length)
     blank = length - fill
+    # Outputs graph using basic strings
     graph = ''
     while fill > 0:
         graph = graph + '#'
@@ -51,7 +53,9 @@ def percent_to_graph(percent: float, length: int=20) -> str:
 
 def get_sys_mem() -> int:
     "return total system memory (used or available) in kB"
+    # Opens and read /proc/meminfo file
     f = open('/proc/meminfo', 'r')
+    # Find the MemTotal line
     for line in f:
         if 'MemTotal:' in line:
             mem = int(line.split()[1])
@@ -63,6 +67,7 @@ def get_sys_mem() -> int:
 def get_avail_mem() -> int:
     "return total memory that is available"
     f = open('/proc/meminfo', 'r')
+        # Find the MemTotal line
     for line in f:
         if 'MemAvailable:' in line:
             mem = int(line.split()[1])
@@ -73,6 +78,7 @@ def get_avail_mem() -> int:
 
 def pids_of_prog(app_name: str) -> list:
     "given an app name, return all pids associated with app"
+    # Uses pidof to to retrieve PIDs
     cmd = os.popen('pidof ' + app_name)
     output = cmd.read()
     cmd.close()
@@ -85,6 +91,7 @@ def rss_mem_of_pid(proc_id: str) -> int:
     try:
         f = open('/proc/' + proc_id + '/status', 'r')
         for line in f:
+            # Look for VmRSS line
             if 'VmRSS:' in line:
                 mem = int(line.split()[1])
                 f.close()
@@ -109,9 +116,31 @@ def bytes_to_human_r(kibibytes: int, decimal_places: int=2) -> str:
 if __name__ == "__main__":
     args = parse_command_args()
     if not args.program:
-        ...
+        # Show total system memory if program not specified
+        avail_mem = get_avail_mem()
+        used_mem = total_mem - avail_mem
+        percent = used_mem / total_mem
+        graph = percent_to_graph(percent, args.length)
+        
+        if args.human_readable:
+            print('Memory' + ' ' * 9 + '[' + graph + ' | ' + str(int(percent*100)) + '%] ' + bytes_to_human_r(used_mem) + '/' + bytes_to_human_r(total_mem))
+        else:
+            print('Memory' + ' ' * 9 + '[' + graph + ' | ' + str(int(percent*100)) + '%] ' + str(used_mem) + '/' + str(total_mem))
     else:
-        ...
+        # Gets and displays the memory usage for the process specified
+        pids = pids_of_prog(args.program)
+        if len(pids) > 0:
+            for pid in pids:
+                # Calculations
+                mem_used = rss_mem_of_pid(pid)
+                percent = mem_used / total_mem
+                graph = percent_to_graph(percent, args.length)
+                
+                pid_space = ' ' * (14 - len(pid))
+                if args.human_readable:
+                    print(pid + pid_space + '[' + graph + ' | ' + str(int(percent*100)) + '%] ' + bytes_to_human_r(mem_used) + '/' + bytes_to_human_r(total_mem))
+                else:
+                    print(pid + pid_space + '[' + graph + ' | ' + str(int(percent*100)) + '%] ' + str(mem_used) + '/' + str(total_mem))
     # process args
     # if no parameter passed, 
     # open meminfo.

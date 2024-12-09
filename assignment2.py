@@ -3,11 +3,11 @@
 '''
 OPS445 Assignment 2
 Program: assignment2.py 
-Author: "Student Name"
-Semester: "Enter Winter/Summer/Fall Year"
+Author: Sean Ryan Rivera | srivera8
+Semester: Fall 2024
 
 The python code in this file is original work written by
-"Student Name". No code in this file is copied from any other source 
+Sean Ryan Rivera. No code in this file is copied from any other source 
 except those provided by the course instructor, including any person, 
 textbook, or on-line resource. I have not shared this python script 
 with anyone or anything except for submission for grading.  
@@ -36,16 +36,39 @@ def parse_command_args() -> object:
 
 def percent_to_graph(percent: float, length: int=20) -> str:
     "turns a percent 0.0 - 1.0 into a bar graph"
-    ...
+    fill = int(percent * length)
+    blank = length - fill
+    graph = ''
+    while fill > 0:
+        graph = graph + '#'
+        fill = fill - 1
+    while blank > 0:
+        graph = graph + ' ' 
+        blank = blank - 1
+    return graph
 # percent to graph function
 
 def get_sys_mem() -> int:
     "return total system memory (used or available) in kB"
-    ...
+    f = open('/proc/meminfo', 'r')
+    for line in f:
+        if 'MemTotal:' in line:
+            mem = int(line.split()[1])
+            f.close()
+            return mem
+    f.close()
+    return 0
 
 def get_avail_mem() -> int:
     "return total memory that is available"
-    ...
+    f = open('/proc/meminfo', 'r')
+    for line in f:
+        if 'MemAvailable:' in line:
+            mem = int(line.split()[1])
+            f.close()
+            return mem
+    f.close()
+    return 0
 
 def pids_of_prog(app_name: str) -> list:
     "given an app name, return all pids associated with app"
